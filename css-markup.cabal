@@ -3,7 +3,7 @@
 
 name:                css-markup
 version:             0.1.0.0
-synopsis:            A CSS-like markup language that can be converted to html
+synopsis:            A markup language with CSS-like syntax.
 -- description:
 license:             GPL-3
 license-file:        LICENSE
