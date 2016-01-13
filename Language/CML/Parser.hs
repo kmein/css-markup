@@ -1,27 +1,32 @@
-module Language.CML.Expression (parseExpr) where
+-- | This module exports the parsers for the CML language.
+module Language.CML.Expression where
 
 import Text.ParserCombinators.Parsec
 
-data Expr = Expr String [Spec] [Expr]
+data Expr = Expr String [Spec] [Expr] -- ^ the elementary expression type is a tag-name with zero to possible infinite specifications (classes, ids, other attributes) and child expressions
   deriving (Eq, Show)
 
-data Spec = Id String
-          | Attr (String, String)
-          | Class String
+data Spec = Id String             -- ^ a data type for <tag id="id-name"></tag>
+          | Attr (String, String) -- ^ a data type for <tag key="value"></tag>
+          | Class String          -- ^ a data type for <tag class="class-name"></tag>
           deriving (Eq, Show)
 
+-- | a parser wrapped in curly braces
 braced :: Parser a -> Parser a
 braced p = char '{' *> optional spaces *> p <* optional spaces <* char '}'
 
+-- | the main parser: parses an entire HTML tag tree
 parseExpr :: Parser Expr
 parseExpr = Expr
          <$> parseTag
          <*> many parseSpec <* optional spaces
          <*> braced (many parseExpr)
 
+-- | parses a tag name
 parseTag :: Parser String
 parseTag = parseIdent
 
+-- | parses either an id-spec, a class-spec or a miscellaneous attribute
 parseSpec :: Parser Spec
 parseSpec = parseId <|> parseClass <|> parseAttr
   where
@@ -30,6 +35,7 @@ parseSpec = parseId <|> parseClass <|> parseAttr
     parseClass = Class <$> (char '.' *> parseIdent)
     parseAttr = fmap Attr $ (,) <$> (char ':' *> parseIdent <* char '=') <*> parseString
 
+-- | simple string and identifier parsers
 parseIdent, parseString :: Parser String
 parseIdent = (:) <$> (lower <|> upper) <*> many (alphaNum <|> oneOf "-_")
 parseString = char '"' *> many (noneOf ['"']) <* char '"'
