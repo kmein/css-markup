@@ -3,30 +3,30 @@ module Language.CML.Expression where
 
 import Text.ParserCombinators.Parsec
 
-data Expr = Expr String [Spec] [Expr] -- ^ the elementary expression type is a tag-name with zero to possible infinite specifications (classes, ids, other attributes) and child expressions
+data Expr = Expr String [Spec] [Expr] -- ^ The elementary expression type is a tag-name with zero to possible infinite specifications (classes, ids, other attributes) and child expressions.
   deriving (Eq, Show)
 
-data Spec = Id String             -- ^ a data type for <tag id="id-name"></tag>
-          | Attr (String, String) -- ^ a data type for <tag key="value"></tag>
-          | Class String          -- ^ a data type for <tag class="class-name"></tag>
+data Spec = Id String             -- ^ A data type for <tag id="id-name"></tag>.
+          | Attr (String, String) -- ^ A data type for <tag key="value"></tag>.
+          | Class String          -- ^ A data type for <tag class="class-name"></tag>.
           deriving (Eq, Show)
 
--- | a parser wrapped in curly braces
+-- | A parser wrapped in curly braces.
 braced :: Parser a -> Parser a
 braced p = char '{' *> optional spaces *> p <* optional spaces <* char '}'
 
--- | the main parser: parses an entire HTML tag tree
+-- | The main parser: parses an entire HTML tag tree.
 parseExpr :: Parser Expr
 parseExpr = Expr
          <$> parseTag
          <*> many parseSpec <* optional spaces
-         <*> braced (many parseExpr)
+         <*> braced (parseExpr `sepBy` optional spaces)
 
--- | parses a tag name
+-- | Parses a tag name.
 parseTag :: Parser String
 parseTag = parseIdent
 
--- | parses either an id-spec, a class-spec or a miscellaneous attribute
+-- | Parses either an id-spec, a class-spec or a miscellaneous attribute.
 parseSpec :: Parser Spec
 parseSpec = parseId <|> parseClass <|> parseAttr
   where
@@ -35,7 +35,7 @@ parseSpec = parseId <|> parseClass <|> parseAttr
     parseClass = Class <$> (char '.' *> parseIdent)
     parseAttr = fmap Attr $ (,) <$> (char ':' *> parseIdent <* char '=') <*> parseString
 
--- | simple string and identifier parsers
+-- | Simple string and identifier parsers.
 parseIdent, parseString :: Parser String
 parseIdent = (:) <$> (lower <|> upper) <*> many (alphaNum <|> oneOf "-_")
 parseString = char '"' *> many (noneOf ['"']) <* char '"'
