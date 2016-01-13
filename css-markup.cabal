@@ -16,7 +16,7 @@ extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
-  exposed-modules:   Language.CML.Parser
+  exposed-modules:   Language.CML.Expression
   -- other-modules:
   -- other-extensions:
   build-depends:       base >=4.8 && <4.9, parsec
